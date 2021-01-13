@@ -1,4 +1,10 @@
-import { rename, createWriteStream, readFileSync, writeFileSync } from "fs";
+import {
+  rename,
+  createWriteStream,
+  readFileSync,
+  writeFileSync,
+  existsSync,
+} from "fs";
 import fetch, { Headers } from "node-fetch";
 import { pipeline } from "stream";
 import { promisify } from "util";
@@ -140,28 +146,31 @@ async function processJson(
   };
   dateToCompare: Date;
 }): Promise<void> {
-  console.log("Checking for changes...");
+  // preprocess either if the db.json doesn't exist or if the remote zip changed.
+  console.log("Checking if preprocessing is necessary");
   if (
-    !(await checkChanged(
+    !existsSync(config.json.processedPath) ||
+    (await checkChanged(
       config.github.apiUrl,
       config.github.pathArg,
       config.dateToCompare,
       config.github.checkFrequency
     ))
   ) {
-    console.log("No new change. Preprocessing complete.");
+    console.log("Downloading zip...");
+    await downloadZip(config.fileUrl, config.zip.savePath);
+    console.log("Unzipping new zip to JSON...");
+    await unzipToJson(config.zip.savePath, config.json.savePath);
+    console.log("Processing the raw JSON data...");
+    await processJson(
+      config.json.savePath,
+      config.json.processedPath,
+      config.dateToCompare
+    );
+  } else {
+    console.log("No preprocessing was necessary.");
     return Promise.resolve();
   }
-  console.log("Changes found.\nDownloading zip...");
-  await downloadZip(config.fileUrl, config.zip.savePath);
-  console.log("Unzipping new zip to JSON...");
-  await unzipToJson(config.zip.savePath, config.json.savePath);
-  console.log("Processing the raw JSON data...");
-  await processJson(
-    config.json.savePath,
-    config.json.processedPath,
-    config.dateToCompare
-  );
   console.log("Preprocessing complete.");
 }
 
