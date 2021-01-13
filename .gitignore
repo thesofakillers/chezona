@@ -1,7 +1,8 @@
 # User defined {{{
+# database files
 dpc-covid-19-ita-aree-nuove-g.json
 db.json
-node_modules/
+raw.json*
 .cache/
 public
 # }}}
