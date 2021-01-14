@@ -1,7 +1,7 @@
 module.exports = {
   siteMetadata: {
-    title: "Che Zona",
-    siteUrl: "https://www.chezona.it",
+    title: "Che Zona Covid",
+    siteUrl: "https://www.chezonacovid.it",
   },
   plugins: [
     "gatsby-plugin-react-helmet",
